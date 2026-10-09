@@ -271,7 +271,7 @@ if uploaded:
             clipboard_button("Копировать всё", all_html, "copy-all")
             with st.expander("Детали извлечения"):
                 st.write(f"HTML-блоков: {len(blocks)}")
-                st.write(f"URL-ссылок в результате: {len(re.findall(r'<a\\s', all_html))}")
+                st.write(f"URL-ссылок в результате: {all_html.count('<a href=')}")
                 st.write("Источник данных: только колонка «Поля для заполнения редактором».")
     except Exception as exc:
         st.error(f"Не удалось обработать файл: {exc}")
