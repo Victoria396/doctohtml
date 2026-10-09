@@ -308,33 +308,32 @@ if uploaded:
                 st.caption("Каждый блок можно скопировать отдельно. Используйте «Копировать всё» для полного результата.")
             with col2:
                 st.download_button("⬇ Скачать HTML", data=all_html.encode("utf-8"), file_name=f"{uploaded.name.rsplit('.', 1)[0]}.html", mime="text/html; charset=utf-8", use_container_width=True)
+            def clipboard_button(label: str, payload: str, key: str) -> None:
+                # Embed JSON safely; encode UTF-8 bytes as base64 so quotes and Unicode
+                # in HTML cannot break the onclick JavaScript.
+                import base64
+                encoded = base64.b64encode(payload.encode("utf-8")).decode("ascii")
+                components.html(
+                    f"""
+                    <button id="{key}"
+                      style="width:100%;padding:0.42rem 0.65rem;border:1px solid #d0d7de;border-radius:8px;background:transparent;cursor:pointer;font-size:14px"
+                      onclick="const bytes=Uint8Array.from(atob('{encoded}'),c=>c.charCodeAt(0));const text=new TextDecoder().decode(bytes);navigator.clipboard.writeText(text).then(()=>this.innerText='Скопировано').catch(()=>this.innerText='Не удалось скопировать')">
+                      {label}
+                    </button>
+                    """,
+                    height=43,
+                )
+
             for i, block in enumerate(blocks):
                 with st.container(border=True):
                     header, copy_col = st.columns([5, 1])
                     with header:
                         st.markdown(f"**{i + 1}. {block['title']}**")
                     with copy_col:
-                        components.html(
-                            f"""
-                            <button
-                              style="width:100%;padding:0.42rem 0.65rem;border:1px solid #d0d7de;border-radius:8px;background:transparent;cursor:pointer;font-size:14px"
-                              onclick="const value = {JSON.stringify("PLACEHOLDER")};">
-                              Копировать
-                            </button>
-                            """,
-                            height=43,
-                        )
+                        clipboard_button("Копировать", block["html"], f"copy-{i}")
                     st.code(block["html"], language="html", line_numbers=False)
-            components.html(
-                f"""
-                <button
-                  style="padding:0.55rem 0.9rem;border:1px solid #d0d7de;border-radius:8px;background:transparent;cursor:pointer;font-size:14px"
-                  onclick="navigator.clipboard.writeText({all_html!r}).then(() => this.innerText='Всё скопировано').catch(() => this.innerText='Не удалось скопировать')">
-                  Копировать всё
-                </button>
-                """,
-                height=48,
-            )
+
+            clipboard_button("Копировать всё", all_html, "copy-all")
             with st.expander("Проверка и ограничения"):
                 st.write(f"- Найдено абзацев: {len(paragraphs)}")
                 st.write(f"- Найдено HTML-блоков: {len(blocks)}")
