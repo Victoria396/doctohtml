@@ -314,12 +314,11 @@ if uploaded:
                     with header:
                         st.markdown(f"**{i + 1}. {block['title']}**")
                     with copy_col:
-                        # navigator.clipboard is invoked directly from the user's click.
                         components.html(
                             f"""
                             <button
                               style="width:100%;padding:0.42rem 0.65rem;border:1px solid #d0d7de;border-radius:8px;background:transparent;cursor:pointer;font-size:14px"
-                              onclick="navigator.clipboard.writeText({block['html']!r}).then(() => this.innerText='Скопировано').catch(() => this.innerText='Не удалось скопировать')">
+                              onclick="const value = {JSON.stringify("PLACEHOLDER")};">
                               Копировать
                             </button>
                             """,
