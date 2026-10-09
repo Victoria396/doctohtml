@@ -80,15 +80,21 @@ def render_cell_paragraphs(cell):
     result = []
     for paragraph in cell.paragraphs:
         rendered = render_paragraph(paragraph)
-        if rendered.strip():
+        # Word frequently stores separate editorial paragraphs as hard line breaks
+        # inside a single paragraph. Convert those breaks to separate <p> elements,
+        # matching the expected publishing HTML rather than emitting <br> tags.
+        html_parts = rendered.split("<br>")
+        text_parts = paragraph.text.split("\n")
+        for index, html_part in enumerate(html_parts):
+            if not html_part.strip():
+                continue
+            text = text_parts[index].strip() if index < len(text_parts) else html_part
             result.append({
-                "text": paragraph.text.strip(),
-                "html": rendered,
+                "text": text,
+                "html": html_part,
                 "heading": is_heading(paragraph),
             })
     return result
-
-
 def find_url_in_title(value: str) -> str:
     match = URL_RE.search(value)
     return match.group(0).rstrip(".,;") if match else ""
