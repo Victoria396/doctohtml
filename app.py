@@ -308,37 +308,34 @@ if uploaded:
                 st.caption("Каждый блок можно скопировать отдельно. Используйте «Копировать всё» для полного результата.")
             with col2:
                 st.download_button("⬇ Скачать HTML", data=all_html.encode("utf-8"), file_name=f"{uploaded.name.rsplit('.', 1)[0]}.html", mime="text/html; charset=utf-8", use_container_width=True)
-            components.html(
-                """
-                <script>
-                // Clipboard controls are rendered for a consistent, one-click copy experience.
-                </script>
-                """,
-                height=0,
-            )
             for i, block in enumerate(blocks):
                 with st.container(border=True):
-                    top = st.columns([5, 1])
-                    with top[0]:
+                    header, copy_col = st.columns([5, 1])
+                    with header:
                         st.markdown(f"**{i + 1}. {block['title']}**")
-                    with top[1]:
-                        st.button("Копировать", key=f"copy_{i}", on_click=lambda value=block["html"]: st.session_state.update({"copy_payload": value}), use_container_width=True)
-                    st.code(block["html"], language="html", line_numbers=False)
-                    if st.session_state.get("copy_payload") == block["html"]:
-                        # Streamlit's code block provides a native copy icon; also offer an explicit clipboard button above.
+                    with copy_col:
+                        # navigator.clipboard is invoked directly from the user's click.
                         components.html(
                             f"""
-                            <button id="copy-{i}" style="display:none">copy</button>
-                            <script>
-                            const payload = {block["html"]!r};
-                            if (navigator.clipboard && window.parent) {{
-                              navigator.clipboard.writeText(payload).catch(() => {{}});
-                            }}
-                            </script>
+                            <button
+                              style="width:100%;padding:0.42rem 0.65rem;border:1px solid #d0d7de;border-radius:8px;background:transparent;cursor:pointer;font-size:14px"
+                              onclick="navigator.clipboard.writeText({block['html']!r}).then(() => this.innerText='Скопировано').catch(() => this.innerText='Не удалось скопировать')">
+                              Копировать
+                            </button>
                             """,
-                            height=0,
+                            height=43,
                         )
-                        st.success("HTML блока подготовлен. Если браузер не разрешил копирование автоматически, используйте иконку копирования у кода.")
+                    st.code(block["html"], language="html", line_numbers=False)
+            components.html(
+                f"""
+                <button
+                  style="padding:0.55rem 0.9rem;border:1px solid #d0d7de;border-radius:8px;background:transparent;cursor:pointer;font-size:14px"
+                  onclick="navigator.clipboard.writeText({all_html!r}).then(() => this.innerText='Всё скопировано').catch(() => this.innerText='Не удалось скопировать')">
+                  Копировать всё
+                </button>
+                """,
+                height=48,
+            )
             with st.expander("Проверка и ограничения"):
                 st.write(f"- Найдено абзацев: {len(paragraphs)}")
                 st.write(f"- Найдено HTML-блоков: {len(blocks)}")
